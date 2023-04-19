@@ -55,9 +55,27 @@ dependencies {
     implementation 'com.google.android.gms:play-services-maps:18.1.0'
     //endregion
 
+
+    // region Lifecycle
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.1")
+    // endregion
+
+
     //region Dependency Injection
     implementation "io.insert-koin:koin-core:$koin_version"
     implementation "io.insert-koin:koin-android:$koin_version"
+    //endregion
+
+    //start Network
+    implementation "com.squareup.retrofit2:retrofit:2.9.0"
+    implementation "com.squareup.retrofit2:converter-gson:2.9.0"
+    implementation 'com.google.code.gson:gson:2.10.1'
+    //endregion
+
+    //start Other
+    implementation 'com.guolindev.permissionx:permissionx:1.7.1'
+    //endregion
 
     //region Tests
     testImplementation 'junit:junit:4.13.2'
