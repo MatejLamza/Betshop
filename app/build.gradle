@@ -2,7 +2,8 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id "io.gitlab.arturbosch.detekt" version "$detekt_version"
-
+    id 'com.google.gms.google-services' version '4.3.15'
+    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
 }
 
 android {
@@ -32,6 +33,17 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    buildFeatures {
+        viewBinding true
+    }
+
+    flavorDimensions "environment"
+    productFlavors {
+        develop {
+            dimension "environment"
+            buildConfigField "String", "SERVER_URL", '"https://interview.superology.dev"'
+        }
+    }
 }
 
 dependencies {
@@ -40,7 +52,12 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.8.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'com.google.android.gms:play-services-maps:18.1.0'
     //endregion
+
+    //region Dependency Injection
+    implementation "io.insert-koin:koin-core:$koin_version"
+    implementation "io.insert-koin:koin-android:$koin_version"
 
     //region Tests
     testImplementation 'junit:junit:4.13.2'
