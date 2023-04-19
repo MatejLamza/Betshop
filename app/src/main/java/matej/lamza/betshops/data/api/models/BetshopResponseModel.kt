@@ -2,9 +2,9 @@ package matej.lamza.betshops.data.api.models
 
 import com.google.gson.annotations.SerializedName
 
-data class BetshopResponse(
+data class BetshopResponseModel(
     @SerializedName("count")
     val count: Int,
     @SerializedName("betshops")
-    val betshops: List<Betshop>
+    val betshops: List<BetshopModel>
 )

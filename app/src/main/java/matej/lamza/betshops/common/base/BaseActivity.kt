@@ -6,7 +6,7 @@ import androidx.viewbinding.ViewBinding
 import matej.lamza.betshops.utils.ActivityViewBindingInflate
 
 abstract class BaseActivity<VB : ViewBinding>(private val inflate: ActivityViewBindingInflate<VB>? = null) :
-    AppCompatActivity() {
+    AppCompatActivity(), View {
 
     private var _binding: VB? = null
     val binding: VB

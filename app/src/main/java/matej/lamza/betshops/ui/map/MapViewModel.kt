@@ -10,15 +10,12 @@ private const val TAG = "MapViewModel"
 
 class MapViewModel(private val betshopLocationsRepo: BetshopLocationsRepo) : ViewModel() {
 
-    private val cords = listOf(
-        48.16124, 11.60912, 48.12229, 11.52741
-    )
+    private val cords = listOf(48.16124, 11.60912, 48.12229, 11.52741)
 
     init {
         viewModelScope.launch {
-            Log.d(TAG, "Viewmodel scope launched!!! ")
             betshopLocationsRepo.fetchBetshopLocation(cords).collect {
-                it.betshops.forEach {
+                it.forEach {
                     Log.d(TAG, "Dobio sam item: ${it.name} ")
                 }
             }
