@@ -31,11 +31,27 @@ class MapActivity : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::infla
     @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        (supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment).also {
-            it.getMapAsync(this)
-        }
+        (supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment).also { it.getMapAsync(this) }
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        getLastLocation()
 
+    }
+
+    override fun onMapReady(googleMaps: GoogleMap) {
+        mMap = googleMaps
+        mMap.setOnCameraMoveListener {
+            val visibleRegion = mMap.projection.visibleRegion
+            mapViewModel.visibleMapRange.value = visibleRegion
+            Log.d(
+                "ccc",
+                "onMapReady: NEAR LEFT${visibleRegion.nearLeft} | NEAR RIGHT ${visibleRegion.nearRight} \n FAR LEFT: ${visibleRegion.farLeft} | FAR RIGHT: ${visibleRegion.farRight}"
+            )
+            mapViewModel.updateMap()
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun getLastLocation() {
         if (!arePermissionsGranted(permisions)) {
             requestPermission(permisions,
                 onGranted = {
@@ -47,9 +63,5 @@ class MapActivity : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::infla
                 onDenied = {}
             )
         }
-    }
-
-    override fun onMapReady(googleMaps: GoogleMap) {
-        mMap = googleMaps
     }
 }
