@@ -31,4 +31,6 @@ class SplashActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::in
             }
         }
     }
+
+
 }

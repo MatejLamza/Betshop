@@ -1,25 +1,36 @@
 package matej.lamza.betshops.ui.map
 
 import android.annotation.SuppressLint
+import android.content.res.Resources
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.WindowManager
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.maps.android.clustering.ClusterManager
+import com.google.maps.android.clustering.algo.NonHierarchicalViewBasedAlgorithm
 import matej.lamza.betshops.R
 import matej.lamza.betshops.common.base.BaseActivity
+import matej.lamza.betshops.data.domain.models.Betshop
+import matej.lamza.betshops.data.domain.models.ClusterLocation
 import matej.lamza.betshops.databinding.ActivityMapsBinding
 import matej.lamza.betshops.utils.MapUtils
 import matej.lamza.betshops.utils.extensions.arePermissionsGranted
 import matej.lamza.betshops.utils.extensions.requestPermission
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class MapActivity : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::inflate), OnMapReadyCallback {
+abstract class MapActivity : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::inflate), OnMapReadyCallback {
 
+    private lateinit var clusterManager: ClusterManager<ClusterLocation>
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var mMap: GoogleMap
+
+    private var widthDp: Int = 0
+    private var heightDp: Int = 0
 
     private val mapViewModel by viewModel<MapViewModel>()
     private val permisions: List<String> =
@@ -35,19 +46,30 @@ class MapActivity : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::infla
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         getLastLocation()
 
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val temp = this.getSystemService(WindowManager::class.java).currentWindowMetrics
+            widthDp = temp.bounds.width()
+            heightDp = temp.bounds.height()
+        } else {
+            val temp = Resources.getSystem().displayMetrics
+            widthDp = temp.widthPixels
+            heightDp = temp.heightPixels
+        }
+
+
+        mapViewModel.betshopLocations.observe(this) {
+            Log.d("kkk", "Dobio sam:  ${it.size} lokacija")
+            setupCluster(it)
+        }
     }
 
     override fun onMapReady(googleMaps: GoogleMap) {
         mMap = googleMaps
-        mMap.setOnCameraMoveListener {
-            val visibleRegion = mMap.projection.visibleRegion
-            mapViewModel.visibleMapRange.value = visibleRegion
-            Log.d(
-                "ccc",
-                "onMapReady: NEAR LEFT${visibleRegion.nearLeft} | NEAR RIGHT ${visibleRegion.nearRight} \n FAR LEFT: ${visibleRegion.farLeft} | FAR RIGHT: ${visibleRegion.farRight}"
-            )
-            mapViewModel.updateMap()
-        }
+        clusterManager = ClusterManager(this, mMap)
+        clusterManager.setAlgorithm(NonHierarchicalViewBasedAlgorithm(widthDp, heightDp));
+        mMap.setOnCameraIdleListener(clusterManager)
+        mMap.setOnCameraMoveListener { mapViewModel.visibleMapRange.value = mMap.projection.visibleRegion }
     }
 
     @SuppressLint("MissingPermission")
@@ -62,6 +84,20 @@ class MapActivity : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::infla
                 },
                 onDenied = {}
             )
+        }
+    }
+
+    private fun setupCluster(lista: List<Betshop>) {
+        Log.d("bbb", "setupCluster: Settam cluster!")
+        for (i in 0..10) {
+            val offset = i / 60.0
+            lista.forEach {
+                val position = it.location
+                val lat = position.latitude + offset
+                val lng = position.longitude + offset
+                val offsetItem = ClusterLocation(lat, lng, "", "")
+                clusterManager.addItem(offsetItem)
+            }
         }
     }
 }

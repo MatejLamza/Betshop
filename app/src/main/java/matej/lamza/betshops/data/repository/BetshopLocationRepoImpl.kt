@@ -14,5 +14,4 @@ class BetshopLocationRepoImpl(private val betshopAPI: BetshopAPI) : BetshopLocat
             .map { response ->
                 response.betshops.map { betshopModel -> betshopModel.toDomain() }
             }
-
 }

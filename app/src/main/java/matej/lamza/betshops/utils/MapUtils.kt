@@ -5,7 +5,10 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.maps.android.clustering.ClusterManager
 import matej.lamza.betshops.R
+import matej.lamza.betshops.data.domain.models.Betshop
+import matej.lamza.betshops.data.domain.models.ClusterLocation
 
 object MapUtils {
 
@@ -18,5 +21,20 @@ object MapUtils {
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin_active))
         )
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, zoom))
+    }
+
+    fun createMarkerCluster(
+        dataset: List<Betshop>,
+        clusterManager: ClusterManager<ClusterLocation>,
+        numberOfClusters: Int = 10
+    ) {
+        for (i in 0..numberOfClusters) {
+            val offset = i / 60.0
+            dataset.onEach { shop ->
+                val lat = shop.location.latitude + offset
+                val lng = shop.location.longitude + offset
+                clusterManager.addItem(ClusterLocation(lat, lng))
+            }
+        }
     }
 }
