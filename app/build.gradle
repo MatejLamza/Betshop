@@ -75,6 +75,7 @@ dependencies {
 
     //start Other
     implementation 'com.guolindev.permissionx:permissionx:1.7.1'
+    implementation 'com.google.android.gms:play-services-location:21.0.1'
     //endregion
 
     //region Tests

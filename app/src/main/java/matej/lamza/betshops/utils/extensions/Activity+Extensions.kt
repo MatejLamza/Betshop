@@ -16,9 +16,11 @@ fun AppCompatActivity.arePermissionsGranted(vararg permissions: String): Boolean
 }
 
 fun AppCompatActivity.arePermissionsGranted(permissions: List<String>): Boolean {
-    return permissions
-        .map { permission -> ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED }
-        .any { true }
+    return !permissions
+        .map { permission ->
+            ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+        }
+        .contains(false)
 }
 
 

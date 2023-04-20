@@ -22,4 +22,16 @@ abstract class BaseActivity<VB : ViewBinding>(private val inflate: ActivityViewB
         super.onDestroy()
         _binding = null
     }
+
+    override fun dismissLoading() {
+        TODO("Not yet implemented")
+    }
+
+    override fun showLoading() {
+        TODO("Not yet implemented")
+    }
+
+    override fun showError(error: Throwable) {
+        TODO("Not yet implemented")
+    }
 }
