@@ -69,7 +69,6 @@ abstract class MapActivity : BaseActivity<ActivityMapsBinding>(ActivityMapsBindi
         clusterManager = ClusterManager(this, mMap)
         clusterManager.setAlgorithm(NonHierarchicalViewBasedAlgorithm(widthDp, heightDp));
         mMap.setOnCameraIdleListener(clusterManager)
-        mMap.setOnCameraMoveListener { mapViewModel.visibleMapRange.value = mMap.projection.visibleRegion }
     }
 
     @SuppressLint("MissingPermission")

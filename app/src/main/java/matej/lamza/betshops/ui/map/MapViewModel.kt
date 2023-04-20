@@ -11,7 +11,7 @@ private const val TAG = "MapViewModel"
 
 class MapViewModel(private val betshopLocationsRepo: BetshopLocationsRepo) : ViewModel() {
 
-    var visibleMapRange = MutableLiveData<VisibleRegion>()
+    private var visibleMapRange = MutableLiveData<VisibleRegion>()
 
     @OptIn(FlowPreview::class)
     private val updatedCoordinates =
@@ -38,4 +38,7 @@ class MapViewModel(private val betshopLocationsRepo: BetshopLocationsRepo) : Vie
         .asLiveData()
 
 
+    fun setVisibleMapRange(visibleRegion: VisibleRegion) {
+        visibleMapRange.value = visibleRegion
+    }
 }

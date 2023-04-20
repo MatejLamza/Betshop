@@ -57,6 +57,8 @@ dependencies {
 
     //endregion
 
+    implementation 'com.balysv:material-ripple:1.0.2'
+
 
     // region Lifecycle
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")

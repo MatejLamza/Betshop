@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="padding_default">16dp</dimen>
+    <dimen name="padding_small">8dp</dimen>
+    <dimen name="sheet_peak_height">85dp</dimen>
+    <dimen name="corner_radius_default">16dp</dimen>
+</resources>
