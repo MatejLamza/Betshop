@@ -11,7 +11,7 @@ import com.google.maps.android.clustering.ClusterManager
 import com.google.maps.android.clustering.algo.NonHierarchicalViewBasedAlgorithm
 import matej.lamza.betshops.R
 import matej.lamza.betshops.data.domain.models.Betshop
-import matej.lamza.betshops.data.domain.models.ClusterLocation
+import matej.lamza.betshops.data.domain.models.ClusterBetshop
 import matej.lamza.betshops.utils.extensions.height
 import matej.lamza.betshops.utils.extensions.width
 
@@ -29,7 +29,7 @@ object MapUtils {
 
     fun createMarkerCluster(
         dataset: List<Betshop>,
-        clusterManager: ClusterManager<ClusterLocation>,
+        clusterManager: ClusterManager<ClusterBetshop>,
         numberOfClusters: Int = 10
     ) {
         clusterManager.clearItems()
@@ -38,7 +38,7 @@ object MapUtils {
             dataset.onEach { shop ->
                 val lat = shop.location.latitude + offset
                 val lng = shop.location.longitude + offset
-                clusterManager.addItem(ClusterLocation(lat, lng))
+                clusterManager.addItem(ClusterBetshop(lat, lng, shop.name, shop.county, shop.city, shop.address))
             }
         }
     }

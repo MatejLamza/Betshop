@@ -38,7 +38,7 @@ class MapViewModel(private val betshopLocationsRepo: BetshopLocationsRepo) : Vie
         .asLiveData()
 
 
-    fun setVisibleMapRange(visibleRegion: VisibleRegion) {
+    fun updateMapVisibleRegion(visibleRegion: VisibleRegion) {
         visibleMapRange.value = visibleRegion
     }
 }

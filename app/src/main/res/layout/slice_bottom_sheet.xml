@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/bottom_sheet"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@android:color/transparent"
-    android:orientation="vertical"
     app:behavior_hideable="true"
     app:behavior_peekHeight="@dimen/sheet_peak_height"
     app:layout_behavior="@string/bottom_sheet_behavior">
@@ -16,7 +15,8 @@
         android:layout_marginTop="5dp"
         android:backgroundTint="@color/white"
         app:cardCornerRadius="@dimen/corner_radius_default"
-        app:cardElevation="@dimen/padding_default">
+        app:cardElevation="@dimen/padding_default"
+        app:layout_constraintTop_toTopOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -47,6 +47,7 @@
                 app:tint="@color/grey" />
 
             <TextView
+                android:id="@+id/location"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/padding_default"
@@ -68,6 +69,7 @@
                 app:tint="@color/grey" />
 
             <TextView
+                android:id="@+id/phone"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/padding_default"
@@ -90,6 +92,7 @@
                 app:tint="@color/grey" />
 
             <TextView
+                android:id="@+id/schedule"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/padding_default"
@@ -105,4 +108,4 @@
 
     </com.google.android.material.card.MaterialCardView>
 
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
