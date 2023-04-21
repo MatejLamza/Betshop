@@ -36,6 +36,16 @@ class MapV2Activity : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::inf
 
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheetView)
         setBottomSheetVisibility(false)
+        setupListeners()
+    }
+
+    private fun setupListeners() {
+        binding.bottomSheet.route.setOnClickListener {
+            val selectedBetshop = mapViewModel.currentlySelectedLocation
+            if (selectedBetshop != null) {
+                MapUtils.launchNavigationToCords(selectedBetshop.position, this)
+            }
+        }
     }
 
     private fun render(map: GoogleMap) {
@@ -56,11 +66,15 @@ class MapV2Activity : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::inf
         googleMap.setOnCameraMoveListener { mapViewModel.updateMapVisibleRegion(googleMap.projection.visibleRegion) }
         googleMap.setOnCameraIdleListener(clusterManager)
         clusterManager.setOnClusterItemClickListener {
+            mapViewModel.currentlySelectedLocation = it
             setLocationDetails(it)
             setBottomSheetVisibility(true)
             return@setOnClusterItemClickListener false
         }
-        googleMap.setOnMapClickListener { setBottomSheetVisibility(false) }
+        googleMap.setOnMapClickListener {
+            mapViewModel.currentlySelectedLocation = null
+            setBottomSheetVisibility(false)
+        }
     }
 
     private fun setLocationDetails(betshop: ClusterBetshop) {

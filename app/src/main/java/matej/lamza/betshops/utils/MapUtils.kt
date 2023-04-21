@@ -1,6 +1,8 @@
 package matej.lamza.betshops.utils
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -53,4 +55,20 @@ object MapUtils {
                 NonHierarchicalViewBasedAlgorithm(screenDimensions.width, screenDimensions.height)
         }
     }
+
+    fun launchNavigationToCords(latitude: Double, longitude: Double, context: Context) {
+        val gmmIntentUri =
+            Uri.parse("google.navigation:q=${latitude},${longitude}")
+        val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+        context.startActivity(mapIntent)
+    }
+
+    fun launchNavigationToCords(position: LatLng, context: Context) {
+        val gmmIntentUri =
+            Uri.parse("google.navigation:q=${position.latitude},${position.longitude}")
+        val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+        context.startActivity(mapIntent)
+    }
+
+
 }

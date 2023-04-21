@@ -5,6 +5,7 @@ import com.google.android.gms.maps.model.VisibleRegion
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import matej.lamza.betshops.data.BetshopLocationsRepo
+import matej.lamza.betshops.data.domain.models.ClusterBetshop
 import matej.lamza.betshops.utils.extensions.round
 
 private const val TAG = "MapViewModel"
@@ -12,6 +13,8 @@ private const val TAG = "MapViewModel"
 class MapViewModel(private val betshopLocationsRepo: BetshopLocationsRepo) : ViewModel() {
 
     private var visibleMapRange = MutableLiveData<VisibleRegion>()
+
+    var currentlySelectedLocation: ClusterBetshop? = null
 
     @OptIn(FlowPreview::class)
     private val updatedCoordinates =
