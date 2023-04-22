@@ -23,7 +23,6 @@ fun AppCompatActivity.arePermissionsGranted(permissions: List<String>): Boolean 
         .contains(false)
 }
 
-
 fun AppCompatActivity.requestPermission(permissions: List<String>, onGranted: (() -> Unit), onDenied: (() -> Unit)) {
     PermissionX.init(this)
         .permissions(permissions)

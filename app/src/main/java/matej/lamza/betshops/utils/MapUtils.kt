@@ -1,5 +1,6 @@
 package matej.lamza.betshops.utils
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -14,6 +15,8 @@ import com.google.maps.android.clustering.algo.NonHierarchicalViewBasedAlgorithm
 import matej.lamza.betshops.R
 import matej.lamza.betshops.data.domain.models.Betshop
 import matej.lamza.betshops.data.domain.models.ClusterBetshop
+import matej.lamza.betshops.data.domain.models.ClusterMarkerRenderer
+import matej.lamza.betshops.utils.extensions.getScreenMeasurements
 import matej.lamza.betshops.utils.extensions.height
 import matej.lamza.betshops.utils.extensions.width
 
@@ -46,13 +49,14 @@ object MapUtils {
     }
 
     fun <T : ClusterItem?> setupClusterManager(
-        context: Context,
-        map: GoogleMap,
-        screenDimensions: ScreenDimensions
-    ): ClusterManager<T> {
-        return ClusterManager<T>(context, map).apply {
+        context: Activity,
+        map: GoogleMap
+    ): ClusterManager<ClusterBetshop> {
+        val screenDimensions = context.getScreenMeasurements()
+        return ClusterManager<ClusterBetshop>(context, map).apply {
             algorithm =
                 NonHierarchicalViewBasedAlgorithm(screenDimensions.width, screenDimensions.height)
+            renderer = ClusterMarkerRenderer(context, map, this)
         }
     }
 
@@ -69,6 +73,5 @@ object MapUtils {
         val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
         context.startActivity(mapIntent)
     }
-
 
 }

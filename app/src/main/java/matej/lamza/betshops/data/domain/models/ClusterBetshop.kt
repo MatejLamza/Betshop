@@ -12,6 +12,7 @@ class ClusterBetshop(
     address: String
 ) : ClusterItem {
 
+
     private val position: LatLng
     private val title: String
     private val snippet: String

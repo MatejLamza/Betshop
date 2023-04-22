@@ -5,4 +5,5 @@
     <dimen name="padding_small">8dp</dimen>
     <dimen name="sheet_peak_height">85dp</dimen>
     <dimen name="corner_radius_default">16dp</dimen>
+    <dimen name="marker_dimensions">15dp</dimen>
 </resources>
