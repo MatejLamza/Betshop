@@ -57,7 +57,9 @@ dependencies {
 
     //endregion
 
-    implementation 'com.balysv:material-ripple:1.0.2'
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.0-RC")
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.4'
 
 
     // region Lifecycle

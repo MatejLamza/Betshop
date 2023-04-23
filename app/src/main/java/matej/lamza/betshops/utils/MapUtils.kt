@@ -1,8 +1,10 @@
 package matej.lamza.betshops.utils
 
+import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.net.Uri
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -22,12 +24,15 @@ import matej.lamza.betshops.utils.extensions.width
 
 object MapUtils {
 
+    val permisions: List<String> =
+        listOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
+
     val MunichMarker = LatLng(48.137154, 11.576124)
     fun setCurrentLocationOnMapWithZoom(latitude: Double, longitude: Double, map: GoogleMap, zoom: Float = 13.0f) {
         val currentLocation = LatLng(latitude, longitude)
         map.addMarker(
             MarkerOptions().position(currentLocation)
-                .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin_active))
+//                .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin_active))
         )
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, zoom))
     }
@@ -54,8 +59,7 @@ object MapUtils {
     ): ClusterManager<ClusterBetshop> {
         val screenDimensions = context.getScreenMeasurements()
         return ClusterManager<ClusterBetshop>(context, map).apply {
-            algorithm =
-                NonHierarchicalViewBasedAlgorithm(screenDimensions.width, screenDimensions.height)
+            algorithm = NonHierarchicalViewBasedAlgorithm(screenDimensions.width, screenDimensions.height)
             renderer = ClusterMarkerRenderer(context, map, this)
         }
     }
@@ -74,4 +78,17 @@ object MapUtils {
         context.startActivity(mapIntent)
     }
 
+    fun updateMarkerState(
+        context: Context,
+        clusterManager: ClusterManager<ClusterBetshop>,
+        clusterClicked: ClusterBetshop
+    ) {
+        clusterManager.markerCollection.markers
+            .find { marker ->
+                marker.position == clusterClicked.position
+            }?.setIcon(
+                BitmapDescriptorFactory
+                    .fromBitmap(BitmapFactory.decodeResource(context.resources, R.drawable.pin_active))
+            )
+    }
 }

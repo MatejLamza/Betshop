@@ -21,7 +21,7 @@
             android:value="${MAPS_API_KEY}" />
 
         <activity
-            android:name=".ui.map.MapV2Activity"
+            android:name=".ui.map.MapActivityV3"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

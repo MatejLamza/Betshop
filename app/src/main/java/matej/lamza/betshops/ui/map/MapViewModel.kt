@@ -1,11 +1,16 @@
 package matej.lamza.betshops.ui.map
 
+import android.annotation.SuppressLint
+import android.location.Location
 import androidx.lifecycle.*
+import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.model.VisibleRegion
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.tasks.await
 import matej.lamza.betshops.data.BetshopLocationsRepo
 import matej.lamza.betshops.data.domain.models.ClusterBetshop
+import matej.lamza.betshops.utils.extensions.launch
 import matej.lamza.betshops.utils.extensions.round
 
 private const val TAG = "MapViewModel"
@@ -14,14 +19,12 @@ class MapViewModel(private val betshopLocationsRepo: BetshopLocationsRepo) : Vie
 
     private var visibleMapRange = MutableLiveData<VisibleRegion>()
 
-    var currentlySelectedLocation: ClusterBetshop? = null
-
     @OptIn(FlowPreview::class)
     private val updatedCoordinates =
         visibleMapRange
             .distinctUntilChanged()
             .asFlow()
-            .debounce(1500)
+            .debounce(500)
             .map {
                 listOf(
                     it?.farRight?.latitude?.round(),
@@ -34,14 +37,31 @@ class MapViewModel(private val betshopLocationsRepo: BetshopLocationsRepo) : Vie
     @OptIn(FlowPreview::class)
     val betshopLocations = updatedCoordinates
         .distinctUntilChanged()
-        .debounce(1000)
+//        .debounce(0)
         .map { it.filterNotNull() }
         .map { newCords -> betshopLocationsRepo.fetchBetshopLocation(newCords) }
         .flattenConcat()
         .asLiveData()
 
+    private val _lastLocation = MutableLiveData<Location>()
+    val lastLocation: LiveData<Location> = _lastLocation
+
+
+    private val _currentlySelectedBetshop = MutableLiveData<ClusterBetshop?>(null)
+    val currentlySelectedBetshop: LiveData<ClusterBetshop?> = _currentlySelectedBetshop
 
     fun updateMapVisibleRegion(visibleRegion: VisibleRegion) {
         visibleMapRange.value = visibleRegion
+    }
+
+    fun updateCurrentlySelectedBetshop(selectedBetshop: ClusterBetshop?) {
+        _currentlySelectedBetshop.value = selectedBetshop
+    }
+
+    @SuppressLint("MissingPermission")
+    fun requestLastLocation(fusedLocationClient: FusedLocationProviderClient) {
+        launch {
+            _lastLocation.value = fusedLocationClient.lastLocation.await()
+        }
     }
 }
