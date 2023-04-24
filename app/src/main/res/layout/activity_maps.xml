@@ -12,7 +12,7 @@
         android:layout_height="match_parent"
         app:layout_anchor="@id/bottom_sheet" />
 
-    <!--    &lt;!&ndash;bottom sheet container&ndash;&gt;-->
+    <!--bottom sheet container-->
     <include
         android:id="@+id/bottom_sheet"
         layout="@layout/slice_bottom_sheet"

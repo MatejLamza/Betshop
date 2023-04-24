@@ -35,10 +35,9 @@ class MapViewModel(private val betshopLocationsRepo: BetshopLocationsRepo) : Vie
                 )
             }
 
-    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+    @OptIn(ExperimentalCoroutinesApi::class)
     val betshopLocations = updatedCoordinates
         .distinctUntilChanged()
-//        .debounce(0)
         .map { it.filterNotNull() }
         .map { newCords -> betshopLocationsRepo.fetchBetshopLocation(newCords) }
         .flattenConcat()

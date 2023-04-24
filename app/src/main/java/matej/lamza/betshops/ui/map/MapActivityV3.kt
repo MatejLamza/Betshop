@@ -1,8 +1,10 @@
 package matej.lamza.betshops.ui.map
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.distinctUntilChanged
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -11,7 +13,6 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import matej.lamza.betshops.R
-import matej.lamza.betshops.common.base.BaseActivity
 import matej.lamza.betshops.data.domain.models.ClusterBetshop
 import matej.lamza.betshops.databinding.ActivityMapsBinding
 import matej.lamza.betshops.utils.MapUtils
@@ -22,28 +23,38 @@ import matej.lamza.betshops.utils.extensions.requestPermission
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 
-class MapActivityV3 : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::inflate), OnMapReadyCallback {
+private const val TAG = "MojNekiTag"
+
+class MapActivityV3 : AppCompatActivity(), OnMapReadyCallback {
 
     private val utils by lazy { MapUtilsV2<ClusterBetshop>(this) }
     private val mapViewModel by viewModel<MapViewModel>()
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
+    private lateinit var binding: ActivityMapsBinding
+
+    private var isSavedState: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (savedInstanceState != null) {
-            (supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment)
-                .also { it.getMapAsync(this@MapActivityV3) }
-            checkPermissions()
-            bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet.bottomSheet)
-            setupObservers()
-            binding.bottomSheet.route.setOnClickListener {
-                val currentPosition = mapViewModel.currentlySelectedBetshop.value?.position
-                if (currentPosition != null) openNavigation(currentPosition)
-            }
-        }
+        isSavedState = savedInstanceState != null
+        binding = ActivityMapsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet.bottomSheet)
+
+
+        initMap()
+        checkPermissions()
+        setupObservers()
+    }
+
+    private fun initMap() {
+        (supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment)
+            .also { it.getMapAsync(this@MapActivityV3) }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
+        if (isSavedState) return
+        Log.d(TAG, "onMapReady: ")
         utils.setupMap(googleMap)
         utils.map.apply(::setupMapListeners)
     }
@@ -74,6 +85,10 @@ class MapActivityV3 : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::inf
 
         utils.onBetshopSelected = {
             mapViewModel.updateCurrentlySelectedBetshop(it)
+        }
+        binding.bottomSheet.route.setOnClickListener {
+            val currentPosition = mapViewModel.currentlySelectedBetshop.value?.position
+            if (currentPosition != null) openNavigation(currentPosition)
         }
     }
 
