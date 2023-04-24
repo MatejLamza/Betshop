@@ -63,7 +63,8 @@ class MapActivityV3 : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::inf
 
     //region Map
     private fun initMap() {
-        (supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment).also { it.getMapAsync(this@MapActivityV3) }
+        (supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment)
+            .also { it.getMapAsync(this@MapActivityV3) }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -120,6 +121,11 @@ class MapActivityV3 : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::inf
     }
     //endregion
 
+    /**
+     * This function check weather user enabled GPS if [true] we are requesting location updates.
+     * Otherwise in the [false] scenario this function will prompt user to turn on his GPS services.
+     * @see LocationUtils.startLocationUpdates
+     */
     private fun getCurrentLocation() {
         if (locationUtils.isGPSEnabled(this)) locationUtils.startLocationUpdates(locationCallback)
         else

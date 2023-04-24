@@ -26,6 +26,10 @@ class LocationUtils(private val context: Context) {
         }.build()
     }
 
+    /**
+     * This is done because fusedLocation will return null if GPS was previously turned off or no fused location was
+     * not attached to any of the services.
+     */
     @SuppressLint("MissingPermission")
     fun startLocationUpdates(locationCallback: LocationCallback) {
         fusedLocationClient.requestLocationUpdates(createLocationRequest(), locationCallback, Looper.getMainLooper())
