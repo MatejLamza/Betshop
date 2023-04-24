@@ -3,12 +3,12 @@ package matej.lamza.betshops.utils
 import android.Manifest
 import android.app.Activity
 import android.graphics.BitmapFactory
-import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.VisibleRegion
 import com.google.maps.android.clustering.ClusterItem
 import com.google.maps.android.clustering.ClusterManager
 import com.google.maps.android.clustering.algo.NonHierarchicalViewBasedAlgorithm
@@ -24,7 +24,6 @@ class MapUtilsV2<T : ClusterItem>(private val context: Activity) {
     lateinit var clusterManager: ClusterManager<T>
     lateinit var clusterRenderer: ClusterRenderer<T>
 
-    val fusedLocationClient by lazy { LocationServices.getFusedLocationProviderClient(context) }
     var onBetshopSelected: ((marker: T?) -> Unit)? = null
 
     companion object {
@@ -32,8 +31,8 @@ class MapUtilsV2<T : ClusterItem>(private val context: Activity) {
         const val MUNICH_LON = 11.576124
         const val OFFSET = 60.0
 
-        val permissions: List<String> =
-            listOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
+        val permissions =
+            arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
 
         val MunichMarker = LatLng(MUNICH_LAT, MUNICH_LON)
     }
@@ -44,10 +43,16 @@ class MapUtilsV2<T : ClusterItem>(private val context: Activity) {
         setupListeners()
     }
 
-    fun setLocationOnTheMapAndZoom(latitude: Double, longitude: Double, zoom: Float = 16f) {
+    fun setLocationOnTheMapAndZoom(
+        latitude: Double,
+        longitude: Double,
+        zoom: Float = 16f,
+        updateVisibleRegion: ((visibleRegion: VisibleRegion) -> Unit)? = null
+    ) {
         val currentLocation = LatLng(latitude, longitude)
         map.addMarker(MarkerOptions().position(currentLocation))
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, zoom))
+        updateVisibleRegion?.invoke(map.projection.visibleRegion)
     }
 
     private fun setupListeners() {

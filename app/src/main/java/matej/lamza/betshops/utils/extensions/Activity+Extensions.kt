@@ -12,7 +12,7 @@ import androidx.core.content.ContextCompat
 import com.permissionx.guolindev.PermissionX
 import matej.lamza.betshops.utils.ScreenDimensions
 
-fun AppCompatActivity.arePermissionsGranted(permissions: List<String>): Boolean {
+fun AppCompatActivity.arePermissionsGranted(permissions: Array<String>): Boolean {
     val arePermissionsGranted = permissions
         .map { permission -> ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED }
         .contains(false)
@@ -22,13 +22,15 @@ fun AppCompatActivity.arePermissionsGranted(permissions: List<String>): Boolean 
 
 fun AppCompatActivity.requestPermission(permissions: List<String>, onGranted: (() -> Unit), onDenied: (() -> Unit)) {
     Log.d("UtilsMap", "requesting: $permissions")
+    if (permissions.isEmpty()) return
     PermissionX.init(this)
         .permissions(permissions)
         .request { allGranted, grantedList, deniedList ->
             Log.d("UtilsMap", "all Granted: $allGranted |\n GrantedList: $grantedList |\n Denied List: $deniedList  ")
-            if (grantedList.isNotEmpty()) onGranted.invoke()
-            else onDenied.invoke()
+//            if (grantedList.isNotEmpty()) onGranted.invoke()
+//            else onDenied.invoke()
         }
+
 
 }
 
