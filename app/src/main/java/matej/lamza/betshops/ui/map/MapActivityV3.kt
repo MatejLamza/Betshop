@@ -17,25 +17,30 @@ import matej.lamza.betshops.databinding.ActivityMapsBinding
 import matej.lamza.betshops.utils.MapUtils
 import matej.lamza.betshops.utils.MapUtilsV2
 import matej.lamza.betshops.utils.extensions.arePermissionsGranted
+import matej.lamza.betshops.utils.extensions.openNavigation
 import matej.lamza.betshops.utils.extensions.requestPermission
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-private const val TAG = "MapActivityV3"
 
 class MapActivityV3 : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::inflate), OnMapReadyCallback {
 
     private val utils by lazy { MapUtilsV2<ClusterBetshop>(this) }
-
     private val mapViewModel by viewModel<MapViewModel>()
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        (supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment).also { it.getMapAsync(this) }
-        bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet.bottomSheet)
-
-        checkPermissions()
-        setupObservers()
+        if (savedInstanceState != null) {
+            (supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment)
+                .also { it.getMapAsync(this@MapActivityV3) }
+            checkPermissions()
+            bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet.bottomSheet)
+            setupObservers()
+            binding.bottomSheet.route.setOnClickListener {
+                val currentPosition = mapViewModel.currentlySelectedBetshop.value?.position
+                if (currentPosition != null) openNavigation(currentPosition)
+            }
+        }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -55,9 +60,7 @@ class MapActivityV3 : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::inf
         }
         mapViewModel.betshopLocations.distinctUntilChanged().observe(this) {
             if (it.isEmpty()) Toast.makeText(
-                this,
-                "Unfortunatley there are no besthops near this location!",
-                Toast.LENGTH_LONG
+                this, "Unfortunatley there are no besthops near this location!", Toast.LENGTH_LONG
             ).show()
             else {
                 MapUtils.createMarkerCluster(it, utils.clusterManager)
@@ -75,11 +78,14 @@ class MapActivityV3 : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::inf
     }
 
     private fun checkPermissions() {
-        if (!arePermissionsGranted(MapUtils.permisions)) {
-            requestPermission(MapUtils.permisions, onGranted = {
+        if (!arePermissionsGranted(MapUtilsV2.permissions)) {
+            requestPermission(MapUtilsV2.permissions, onGranted = {
                 Toast.makeText(this, "Permissions granted!", Toast.LENGTH_SHORT).show()
                 mapViewModel.requestLastLocation(utils.fusedLocationClient)
-            }, onDenied = {})
+            }, onDenied = {
+                utils.setLocationOnTheMapAndZoom(MapUtilsV2.MunichMarker.latitude, MapUtilsV2.MunichMarker.longitude)
+                mapViewModel.updateMapVisibleRegion(utils.map.projection.visibleRegion)
+            })
         } else {
             mapViewModel.requestLastLocation(utils.fusedLocationClient)
         }

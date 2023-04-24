@@ -5,6 +5,7 @@ import android.location.Location
 import androidx.lifecycle.*
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.model.VisibleRegion
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.tasks.await
@@ -13,7 +14,7 @@ import matej.lamza.betshops.data.domain.models.ClusterBetshop
 import matej.lamza.betshops.utils.extensions.launch
 import matej.lamza.betshops.utils.extensions.round
 
-private const val TAG = "MapViewModel"
+private const val UPDATE_MAP = 500L
 
 class MapViewModel(private val betshopLocationsRepo: BetshopLocationsRepo) : ViewModel() {
 
@@ -24,7 +25,7 @@ class MapViewModel(private val betshopLocationsRepo: BetshopLocationsRepo) : Vie
         visibleMapRange
             .distinctUntilChanged()
             .asFlow()
-            .debounce(500)
+            .debounce(UPDATE_MAP)
             .map {
                 listOf(
                     it?.farRight?.latitude?.round(),
@@ -34,7 +35,7 @@ class MapViewModel(private val betshopLocationsRepo: BetshopLocationsRepo) : Vie
                 )
             }
 
-    @OptIn(FlowPreview::class)
+    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     val betshopLocations = updatedCoordinates
         .distinctUntilChanged()
 //        .debounce(0)
@@ -45,7 +46,6 @@ class MapViewModel(private val betshopLocationsRepo: BetshopLocationsRepo) : Vie
 
     private val _lastLocation = MutableLiveData<Location>()
     val lastLocation: LiveData<Location> = _lastLocation
-
 
     private val _currentlySelectedBetshop = MutableLiveData<ClusterBetshop?>(null)
     val currentlySelectedBetshop: LiveData<ClusterBetshop?> = _currentlySelectedBetshop

@@ -1,5 +1,6 @@
 package matej.lamza.betshops.utils
 
+import android.Manifest
 import android.app.Activity
 import android.graphics.BitmapFactory
 import com.google.android.gms.location.LocationServices
@@ -13,7 +14,6 @@ import com.google.maps.android.clustering.ClusterManager
 import com.google.maps.android.clustering.algo.NonHierarchicalViewBasedAlgorithm
 import com.google.maps.android.clustering.view.ClusterRenderer
 import matej.lamza.betshops.R
-import matej.lamza.betshops.data.domain.models.MapModel
 import matej.lamza.betshops.utils.extensions.getScreenMeasurements
 import matej.lamza.betshops.utils.extensions.height
 import matej.lamza.betshops.utils.extensions.width
@@ -25,8 +25,18 @@ class MapUtilsV2<T : ClusterItem>(private val context: Activity) {
     lateinit var clusterRenderer: ClusterRenderer<T>
 
     val fusedLocationClient by lazy { LocationServices.getFusedLocationProviderClient(context) }
-
     var onBetshopSelected: ((marker: T?) -> Unit)? = null
+
+    companion object {
+        const val MUNICH_LAT = 48.137154
+        const val MUNICH_LON = 11.576124
+        const val OFFSET = 60.0
+
+        val permissions: List<String> =
+            listOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
+
+        val MunichMarker = LatLng(MUNICH_LAT, MUNICH_LON)
+    }
 
     fun setupMap(googleMap: GoogleMap) {
         map = googleMap
@@ -66,20 +76,4 @@ class MapUtilsV2<T : ClusterItem>(private val context: Activity) {
             algorithm = NonHierarchicalViewBasedAlgorithm(screenDimensions.width, screenDimensions.height)
         }
     }
-
-    fun <T : MapModel, K : ClusterItem> createCluster(
-        dataset: List<T>,
-        numberOfClusters: Int = 10
-    ) {
-        val updatedDataset = arrayListOf<T>()
-        for (i in 0..numberOfClusters) {
-            val offset = i / 60
-            dataset.onEach { mapModel ->
-                val updatedLat = mapModel.location.latitude + offset
-                val updatedLong = mapModel.location.longitude + offset
-            }
-        }
-
-    }
-
 }
