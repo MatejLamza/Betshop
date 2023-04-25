@@ -67,9 +67,7 @@ class MapActivity : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::infla
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
-        mapUtils.setupMap(googleMap) {
-            mapViewModel.updateMapVisibleRegion(googleMap.projection.visibleRegion)
-        }
+        mapUtils.setupMap(googleMap) { mapViewModel.updateMapVisibleRegion(googleMap.projection.visibleRegion) }
         checkPermissions()
     }
     //endregion
@@ -78,8 +76,7 @@ class MapActivity : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::infla
     private fun setupObservers() {
         mapViewModel.lastLocation.distinctUntilChanged().observe(this) {
             locationUtils.stopLocationUpdates(locationCallback)
-            mapUtils.setLocationOnTheMapAndZoom(it.latitude, it.longitude)
-            mapViewModel.updateMapVisibleRegion(mapUtils.map.projection.visibleRegion)
+            mapUtils.moveToGivenLocation(it.latitude, it.longitude) { mapViewModel.updateMapVisibleRegion(it) }
         }
         mapViewModel.betshopLocations.distinctUntilChanged().observe(this) {
             if (it.isEmpty()) Toast.makeText(

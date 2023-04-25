@@ -17,13 +17,18 @@ class ClusterMarkerRenderer(
     private val clusterManager: ClusterManager<ClusterBetshop>
 ) : DefaultClusterRenderer<ClusterBetshop>(context, map, clusterManager) {
 
+    var currentlySelectedMarker: ClusterBetshop? = null
+
+    // SEAL CLASS
+    private val active = BitmapFactory.decodeResource(context.resources, R.drawable.pin_active)
+    private val normal = BitmapFactory.decodeResource(context.resources, R.drawable.pin_normal)
+
     override fun onBeforeClusterItemRendered(item: ClusterBetshop, markerOptions: MarkerOptions) {
-        markerOptions.icon(getItemIcon(context = context))
+        val isActive = currentlySelectedMarker?.position == item.position
+        markerOptions.icon(getItemIcon(isActive))
     }
 
-    private fun getItemIcon(context: Context): BitmapDescriptor? {
-        return BitmapDescriptorFactory.fromBitmap(
-            BitmapFactory.decodeResource(context.resources, R.drawable.pin_normal)
-        )
+    private fun getItemIcon(isActive: Boolean): BitmapDescriptor? {
+        return BitmapDescriptorFactory.fromBitmap(if (isActive) active else normal)
     }
 }

@@ -2,11 +2,11 @@ package matej.lamza.betshops.utils
 
 import android.app.Activity
 import android.graphics.BitmapFactory
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.maps.android.clustering.ClusterItem
 import com.google.maps.android.clustering.ClusterManager
 import com.google.maps.android.clustering.algo.NonHierarchicalViewBasedAlgorithm
-import com.google.maps.android.clustering.view.ClusterRenderer
 import matej.lamza.betshops.R
 import matej.lamza.betshops.data.domain.models.ClusterBetshop
 import matej.lamza.betshops.data.domain.models.ClusterMarkerRenderer
@@ -16,9 +16,11 @@ import matej.lamza.betshops.utils.extensions.height
 import matej.lamza.betshops.utils.extensions.width
 
 
-class BetshopMapUtils(private val activity: Activity) : MapUtils<ClusterBetshop>(activity) {
+class BetshopMapUtils(private val activity: Activity) : MapUtils<ClusterBetshop>() {
 
     var onBetshopSelected: ((marker: ClusterBetshop?) -> Unit)? = null
+
+    private lateinit var rendererMy: ClusterMarkerRenderer
 
     override fun <T : ClusterItem> updateMarkerState(markerClicked: T) {
         if (isClusterManagerInitialized()) {
@@ -29,11 +31,12 @@ class BetshopMapUtils(private val activity: Activity) : MapUtils<ClusterBetshop>
         }
     }
 
-    override fun setupClusterManager(context: Activity): ClusterManager<ClusterBetshop> {
-        val screenDimensions = context.getScreenMeasurements()
-        return ClusterManager<ClusterBetshop>(context, map).apply {
+    override fun setupClusterManager(): ClusterManager<ClusterBetshop> {
+        val screenDimensions = activity.getScreenMeasurements()
+        return ClusterManager<ClusterBetshop>(activity, map).apply {
             algorithm = NonHierarchicalViewBasedAlgorithm(screenDimensions.width, screenDimensions.height)
-            renderer = ClusterMarkerRenderer(activity, map, this)
+            rendererMy = ClusterMarkerRenderer(activity, map, this)
+            renderer = rendererMy
         }
     }
 
@@ -41,8 +44,9 @@ class BetshopMapUtils(private val activity: Activity) : MapUtils<ClusterBetshop>
         map.setOnCameraIdleListener(clusterManager)
         map.setOnMapClickListener { onBetshopSelected?.invoke(null) }
         clusterManager.setOnClusterItemClickListener { marker ->
+            rendererMy.currentlySelectedMarker = marker
             onBetshopSelected?.invoke(marker)
-            setLocationOnTheMapAndZoom(marker.position.latitude, marker.position.longitude)
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(marker.position, 16f))
             updateMarkerState(marker)
             return@setOnClusterItemClickListener false
         }
@@ -61,7 +65,4 @@ class BetshopMapUtils(private val activity: Activity) : MapUtils<ClusterBetshop>
         }
     }
 
-    override fun setRenderer(clusterRenderer: ClusterRenderer<ClusterBetshop>) {
-        clusterManager.apply { renderer = clusterRenderer }
-    }
 }

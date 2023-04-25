@@ -1,7 +1,6 @@
 package matej.lamza.betshops.utils
 
 import android.Manifest
-import android.app.Activity
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
@@ -9,10 +8,9 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.VisibleRegion
 import com.google.maps.android.clustering.ClusterItem
 import com.google.maps.android.clustering.ClusterManager
-import com.google.maps.android.clustering.view.ClusterRenderer
 import matej.lamza.betshops.data.domain.models.MarkerItem
 
-abstract class MapUtils<T : ClusterItem>(private val activity: Activity) {
+abstract class MapUtils<T : ClusterItem> {
 
     lateinit var map: GoogleMap
     lateinit var clusterManager: ClusterManager<T>
@@ -31,7 +29,7 @@ abstract class MapUtils<T : ClusterItem>(private val activity: Activity) {
 
     fun setupMap(googleMap: GoogleMap, onCameraMoveListener: (() -> Unit)? = null) {
         map = googleMap
-        clusterManager = setupClusterManager(activity)
+        clusterManager = setupClusterManager()
         setupListeners(onCameraMoveListener)
     }
 
@@ -53,6 +51,16 @@ abstract class MapUtils<T : ClusterItem>(private val activity: Activity) {
         updateVisibleRegion?.invoke(map.projection.visibleRegion)
     }
 
+    fun moveToGivenLocation(
+        latitude: Double,
+        longitude: Double,
+        zoom: Float = 16f,
+        updateVisibleRegion: ((VisibleRegion) -> Unit)?
+    ) {
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(latitude, longitude), zoom))
+        updateVisibleRegion?.invoke(map.projection.visibleRegion)
+    }
+
     internal fun isClusterManagerInitialized() = this::clusterManager.isInitialized
 
     abstract fun setupListeners(onCameraMoveListener: (() -> Unit)? = null)
@@ -61,7 +69,6 @@ abstract class MapUtils<T : ClusterItem>(private val activity: Activity) {
 
     abstract fun <T : ClusterItem> updateMarkerState(markerClicked: T)
 
-    abstract fun setRenderer(clusterRenderer: ClusterRenderer<T>)
 
-    abstract fun setupClusterManager(context: Activity): ClusterManager<T>
+    abstract fun setupClusterManager(): ClusterManager<T>
 }
