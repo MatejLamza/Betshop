@@ -2,10 +2,8 @@ package matej.lamza.betshops.utils
 
 import android.Manifest
 import android.app.Activity
-import android.graphics.BitmapFactory
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.VisibleRegion
@@ -13,16 +11,15 @@ import com.google.maps.android.clustering.ClusterItem
 import com.google.maps.android.clustering.ClusterManager
 import com.google.maps.android.clustering.algo.NonHierarchicalViewBasedAlgorithm
 import com.google.maps.android.clustering.view.ClusterRenderer
-import matej.lamza.betshops.R
+import matej.lamza.betshops.data.domain.models.MarkerItem
 import matej.lamza.betshops.utils.extensions.getScreenMeasurements
 import matej.lamza.betshops.utils.extensions.height
 import matej.lamza.betshops.utils.extensions.width
 
-class MapUtilsV2<T : ClusterItem>(private val context: Activity) {
+abstract class MapUtilsAb<T : ClusterItem>(private val activity: Activity) {
 
     lateinit var map: GoogleMap
     lateinit var clusterManager: ClusterManager<T>
-    lateinit var clusterRenderer: ClusterRenderer<T>
 
     var onBetshopSelected: ((marker: T?) -> Unit)? = null
 
@@ -39,7 +36,7 @@ class MapUtilsV2<T : ClusterItem>(private val context: Activity) {
 
     fun setupMap(googleMap: GoogleMap, onCameraMoveListener: (() -> Unit)? = null) {
         map = googleMap
-        clusterManager = setupClusterManager(context)
+        clusterManager = setupClusterManager(activity)
         setupListeners(onCameraMoveListener)
     }
 
@@ -61,26 +58,15 @@ class MapUtilsV2<T : ClusterItem>(private val context: Activity) {
         updateVisibleRegion?.invoke(map.projection.visibleRegion)
     }
 
-    private fun setupListeners(onCameraMoveListener: (() -> Unit)? = null) {
-        map.setOnCameraIdleListener(clusterManager)
-        map.setOnMapClickListener { onBetshopSelected?.invoke(null) }
-        clusterManager.setOnClusterItemClickListener { marker ->
-            onBetshopSelected?.invoke(marker)
-            setLocationOnTheMapAndZoom(marker.position.latitude, marker.position.longitude)
-            updateMarkerState(marker)
-            return@setOnClusterItemClickListener false
-        }
-        map.setOnCameraMoveListener { onCameraMoveListener?.invoke() }
-    }
+    internal fun isClusterManagerInitialized() = this::clusterManager.isInitialized
 
-    private fun <T : ClusterItem> updateMarkerState(markerClicked: T) {
-        if (this::clusterManager.isInitialized) {
-            val markerBitmap = BitmapFactory.decodeResource(context.resources, (R.drawable.pin_normal))
-            clusterManager.markerCollection.markers
-                .find { marker -> marker.position == markerClicked.position }
-                ?.setIcon(BitmapDescriptorFactory.fromBitmap(markerBitmap))
-        }
-    }
+    abstract fun setupListeners(onCameraMoveListener: (() -> Unit)? = null)
+
+    abstract fun <T : MarkerItem> createMarkerCluster(dataset: List<T>, numberOfClusters: Int = 10)
+
+    abstract fun <T : ClusterItem> updateMarkerState(markerClicked: T)
+
+    abstract fun setRenderer(clusterRenderer: ClusterRenderer<T>)
 
     private fun setupClusterManager(context: Activity): ClusterManager<T> {
         val screenDimensions = context.getScreenMeasurements()

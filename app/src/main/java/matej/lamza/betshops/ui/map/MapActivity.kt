@@ -18,10 +18,11 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import matej.lamza.betshops.R
 import matej.lamza.betshops.common.base.BaseActivity
 import matej.lamza.betshops.data.domain.models.ClusterBetshop
+import matej.lamza.betshops.data.domain.models.ClusterMarkerRenderer
 import matej.lamza.betshops.databinding.ActivityMapsBinding
 import matej.lamza.betshops.utils.LocationUtils
-import matej.lamza.betshops.utils.MapUtils
-import matej.lamza.betshops.utils.MapUtilsV2
+import matej.lamza.betshops.utils.MapUtilsAb
+import matej.lamza.betshops.utils.MapUtilsV3
 import matej.lamza.betshops.utils.extensions.arePermissionsGranted
 import matej.lamza.betshops.utils.extensions.openNavigation
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -30,9 +31,9 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 private const val REQUEST_CODE_PERMISSIONS = 1007
 private const val REQUEST_CODE_LOCATION = 1001
 
-class MapActivityV3 : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::inflate), OnMapReadyCallback {
+class MapActivity : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::inflate), OnMapReadyCallback {
 
-    private val mapUtils by lazy { MapUtilsV2<ClusterBetshop>(this) }
+    private val mapUtils by lazy { MapUtilsV3(this) }
     private val locationUtils by lazy { LocationUtils(this) }
     private val mapViewModel by viewModel<MapViewModel>()
     private val locationCallback: LocationCallback = object : LocationCallback() {
@@ -49,13 +50,12 @@ class MapActivityV3 : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::inf
         bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet.bottomSheet)
 
         initMap()
-        checkPermissions()
         setupObservers()
     }
 
     private fun checkPermissions() {
-        if (!arePermissionsGranted(MapUtilsV2.permissions))
-            requestPermissions(MapUtilsV2.permissions, REQUEST_CODE_PERMISSIONS)
+        if (!arePermissionsGranted(MapUtilsAb.permissions))
+            requestPermissions(MapUtilsAb.permissions, REQUEST_CODE_PERMISSIONS)
         else locationUtils.getCurrentLocation(this, locationCallback) {
             it.startResolutionForResult(this, REQUEST_CODE_LOCATION)
         }
@@ -64,13 +64,15 @@ class MapActivityV3 : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::inf
     //region Map
     private fun initMap() {
         (supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment)
-            .also { it.getMapAsync(this@MapActivityV3) }
+            .also { it.getMapAsync(this@MapActivity) }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
         mapUtils.setupMap(googleMap) {
             mapViewModel.updateMapVisibleRegion(googleMap.projection.visibleRegion)
         }
+        mapUtils.setRenderer(ClusterMarkerRenderer(this, mapUtils.map, mapUtils.clusterManager))
+        checkPermissions()
     }
     //endregion
 
@@ -86,7 +88,7 @@ class MapActivityV3 : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::inf
                 this, "Unfortunatley there are no besthops near this location!", Toast.LENGTH_LONG
             ).show()
             else {
-                MapUtils.createMarkerCluster(it, mapUtils.clusterManager)
+                mapUtils.createMarkerCluster(it)
                 mapUtils.map.moveCamera(CameraUpdateFactory.newCameraPosition(mapUtils.map.cameraPosition))
             }
         }
@@ -130,8 +132,8 @@ class MapActivityV3 : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::inf
             if (locationUtils.isGPSEnabled(this))
                 locationUtils.startLocationUpdates(locationCallback)
             else
-                mapUtils.setLocationOnTheMapAndZoom(MapUtilsV2.MunichMarker.latitude,
-                    MapUtilsV2.MunichMarker.longitude,
+                mapUtils.setLocationOnTheMapAndZoom(MapUtilsAb.MunichMarker.latitude,
+                    MapUtilsAb.MunichMarker.longitude,
                     updateVisibleRegion = { mapViewModel.updateMapVisibleRegion(it) })
         }
     }
@@ -143,8 +145,8 @@ class MapActivityV3 : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::inf
                 this, locationCallback,
             ) { it.startResolutionForResult(this, REQUEST_CODE_LOCATION) }
             else
-                mapUtils.setLocationOnTheMapAndZoom(MapUtilsV2.MunichMarker.latitude,
-                    MapUtilsV2.MunichMarker.longitude,
+                mapUtils.setLocationOnTheMapAndZoom(MapUtilsAb.MunichMarker.latitude,
+                    MapUtilsAb.MunichMarker.longitude,
                     updateVisibleRegion = { mapViewModel.updateMapVisibleRegion(it) })
         }
     }
