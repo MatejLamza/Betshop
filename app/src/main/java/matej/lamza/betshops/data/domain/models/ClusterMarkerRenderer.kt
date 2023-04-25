@@ -14,15 +14,11 @@ import matej.lamza.betshops.R
 class ClusterMarkerRenderer(
     private val context: Context,
     map: GoogleMap,
-    clusterManager: ClusterManager<ClusterBetshop>
+    private val clusterManager: ClusterManager<ClusterBetshop>
 ) : DefaultClusterRenderer<ClusterBetshop>(context, map, clusterManager) {
 
     override fun onBeforeClusterItemRendered(item: ClusterBetshop, markerOptions: MarkerOptions) {
         markerOptions.icon(getItemIcon(context = context))
-    }
-
-    override fun setOnClusterItemClickListener(listener: ClusterManager.OnClusterItemClickListener<ClusterBetshop>?) {
-        super.setOnClusterItemClickListener(listener)
     }
 
     private fun getItemIcon(context: Context): BitmapDescriptor? {

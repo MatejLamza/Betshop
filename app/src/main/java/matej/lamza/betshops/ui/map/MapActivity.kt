@@ -18,11 +18,10 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import matej.lamza.betshops.R
 import matej.lamza.betshops.common.base.BaseActivity
 import matej.lamza.betshops.data.domain.models.ClusterBetshop
-import matej.lamza.betshops.data.domain.models.ClusterMarkerRenderer
 import matej.lamza.betshops.databinding.ActivityMapsBinding
+import matej.lamza.betshops.utils.BetshopMapUtils
 import matej.lamza.betshops.utils.LocationUtils
-import matej.lamza.betshops.utils.MapUtilsAb
-import matej.lamza.betshops.utils.MapUtilsV3
+import matej.lamza.betshops.utils.MapUtils
 import matej.lamza.betshops.utils.extensions.arePermissionsGranted
 import matej.lamza.betshops.utils.extensions.openNavigation
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -33,7 +32,7 @@ private const val REQUEST_CODE_LOCATION = 1001
 
 class MapActivity : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::inflate), OnMapReadyCallback {
 
-    private val mapUtils by lazy { MapUtilsV3(this) }
+    private val mapUtils by lazy { BetshopMapUtils(this) }
     private val locationUtils by lazy { LocationUtils(this) }
     private val mapViewModel by viewModel<MapViewModel>()
     private val locationCallback: LocationCallback = object : LocationCallback() {
@@ -54,8 +53,8 @@ class MapActivity : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::infla
     }
 
     private fun checkPermissions() {
-        if (!arePermissionsGranted(MapUtilsAb.permissions))
-            requestPermissions(MapUtilsAb.permissions, REQUEST_CODE_PERMISSIONS)
+        if (!arePermissionsGranted(MapUtils.permissions))
+            requestPermissions(MapUtils.permissions, REQUEST_CODE_PERMISSIONS)
         else locationUtils.getCurrentLocation(this, locationCallback) {
             it.startResolutionForResult(this, REQUEST_CODE_LOCATION)
         }
@@ -71,7 +70,6 @@ class MapActivity : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::infla
         mapUtils.setupMap(googleMap) {
             mapViewModel.updateMapVisibleRegion(googleMap.projection.visibleRegion)
         }
-        mapUtils.setRenderer(ClusterMarkerRenderer(this, mapUtils.map, mapUtils.clusterManager))
         checkPermissions()
     }
     //endregion
@@ -132,8 +130,8 @@ class MapActivity : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::infla
             if (locationUtils.isGPSEnabled(this))
                 locationUtils.startLocationUpdates(locationCallback)
             else
-                mapUtils.setLocationOnTheMapAndZoom(MapUtilsAb.MunichMarker.latitude,
-                    MapUtilsAb.MunichMarker.longitude,
+                mapUtils.setLocationOnTheMapAndZoom(MapUtils.MunichMarker.latitude,
+                    MapUtils.MunichMarker.longitude,
                     updateVisibleRegion = { mapViewModel.updateMapVisibleRegion(it) })
         }
     }
@@ -145,8 +143,8 @@ class MapActivity : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::infla
                 this, locationCallback,
             ) { it.startResolutionForResult(this, REQUEST_CODE_LOCATION) }
             else
-                mapUtils.setLocationOnTheMapAndZoom(MapUtilsAb.MunichMarker.latitude,
-                    MapUtilsAb.MunichMarker.longitude,
+                mapUtils.setLocationOnTheMapAndZoom(MapUtils.MunichMarker.latitude,
+                    MapUtils.MunichMarker.longitude,
                     updateVisibleRegion = { mapViewModel.updateMapVisibleRegion(it) })
         }
     }

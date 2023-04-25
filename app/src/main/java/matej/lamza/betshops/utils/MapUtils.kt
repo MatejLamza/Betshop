@@ -9,19 +9,14 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.VisibleRegion
 import com.google.maps.android.clustering.ClusterItem
 import com.google.maps.android.clustering.ClusterManager
-import com.google.maps.android.clustering.algo.NonHierarchicalViewBasedAlgorithm
 import com.google.maps.android.clustering.view.ClusterRenderer
 import matej.lamza.betshops.data.domain.models.MarkerItem
-import matej.lamza.betshops.utils.extensions.getScreenMeasurements
-import matej.lamza.betshops.utils.extensions.height
-import matej.lamza.betshops.utils.extensions.width
 
-abstract class MapUtilsAb<T : ClusterItem>(private val activity: Activity) {
+abstract class MapUtils<T : ClusterItem>(private val activity: Activity) {
 
     lateinit var map: GoogleMap
     lateinit var clusterManager: ClusterManager<T>
 
-    var onBetshopSelected: ((marker: T?) -> Unit)? = null
 
     companion object {
         const val MUNICH_LAT = 48.137154
@@ -50,7 +45,7 @@ abstract class MapUtilsAb<T : ClusterItem>(private val activity: Activity) {
         latitude: Double,
         longitude: Double,
         zoom: Float = 16f,
-        updateVisibleRegion: ((visibleRegion: VisibleRegion) -> Unit)? = null
+        updateVisibleRegion: ((VisibleRegion) -> Unit)? = null
     ) {
         val currentLocation = LatLng(latitude, longitude)
         map.addMarker(MarkerOptions().position(currentLocation))
@@ -68,10 +63,5 @@ abstract class MapUtilsAb<T : ClusterItem>(private val activity: Activity) {
 
     abstract fun setRenderer(clusterRenderer: ClusterRenderer<T>)
 
-    private fun setupClusterManager(context: Activity): ClusterManager<T> {
-        val screenDimensions = context.getScreenMeasurements()
-        return ClusterManager<T>(context, map).apply {
-            algorithm = NonHierarchicalViewBasedAlgorithm(screenDimensions.width, screenDimensions.height)
-        }
-    }
+    abstract fun setupClusterManager(context: Activity): ClusterManager<T>
 }

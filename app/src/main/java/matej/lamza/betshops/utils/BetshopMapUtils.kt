@@ -4,21 +4,36 @@ import android.app.Activity
 import android.graphics.BitmapFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.maps.android.clustering.ClusterItem
+import com.google.maps.android.clustering.ClusterManager
+import com.google.maps.android.clustering.algo.NonHierarchicalViewBasedAlgorithm
 import com.google.maps.android.clustering.view.ClusterRenderer
 import matej.lamza.betshops.R
 import matej.lamza.betshops.data.domain.models.ClusterBetshop
+import matej.lamza.betshops.data.domain.models.ClusterMarkerRenderer
 import matej.lamza.betshops.data.domain.models.MarkerItem
+import matej.lamza.betshops.utils.extensions.getScreenMeasurements
+import matej.lamza.betshops.utils.extensions.height
+import matej.lamza.betshops.utils.extensions.width
 
-private const val OFFSET = 60
 
-class MapUtilsV3(private val activity: Activity) : MapUtilsAb<ClusterBetshop>(activity) {
+class BetshopMapUtils(private val activity: Activity) : MapUtils<ClusterBetshop>(activity) {
+
+    var onBetshopSelected: ((marker: ClusterBetshop?) -> Unit)? = null
 
     override fun <T : ClusterItem> updateMarkerState(markerClicked: T) {
         if (isClusterManagerInitialized()) {
-            val markerBitmap = BitmapFactory.decodeResource(activity.resources, (R.drawable.pin_normal))
+            val markerBitmap = BitmapFactory.decodeResource(activity.resources, (R.drawable.pin_active))
             clusterManager.markerCollection.markers
                 .find { marker -> marker.position == markerClicked.position }
                 ?.setIcon(BitmapDescriptorFactory.fromBitmap(markerBitmap))
+        }
+    }
+
+    override fun setupClusterManager(context: Activity): ClusterManager<ClusterBetshop> {
+        val screenDimensions = context.getScreenMeasurements()
+        return ClusterManager<ClusterBetshop>(context, map).apply {
+            algorithm = NonHierarchicalViewBasedAlgorithm(screenDimensions.width, screenDimensions.height)
+            renderer = ClusterMarkerRenderer(activity, map, this)
         }
     }
 
