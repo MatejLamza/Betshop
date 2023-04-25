@@ -5,7 +5,6 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.maps.model.VisibleRegion
 import com.google.maps.android.clustering.ClusterItem
 import com.google.maps.android.clustering.ClusterManager
 import matej.lamza.betshops.data.domain.models.MarkerItem
@@ -14,7 +13,7 @@ abstract class MapUtils<T : ClusterItem> {
 
     lateinit var map: GoogleMap
     lateinit var clusterManager: ClusterManager<T>
-
+    lateinit var mapListeners: MapListeners
 
     companion object {
         const val MUNICH_LAT = 48.137154
@@ -27,10 +26,10 @@ abstract class MapUtils<T : ClusterItem> {
         val MunichMarker = LatLng(MUNICH_LAT, MUNICH_LON)
     }
 
-    fun setupMap(googleMap: GoogleMap, onCameraMoveListener: (() -> Unit)? = null) {
+    fun setupMap(googleMap: GoogleMap) {
         map = googleMap
         clusterManager = setupClusterManager()
-        setupListeners(onCameraMoveListener)
+        map.apply(::setupListeners)
     }
 
     /**
@@ -43,27 +42,21 @@ abstract class MapUtils<T : ClusterItem> {
         latitude: Double,
         longitude: Double,
         zoom: Float = 16f,
-        updateVisibleRegion: ((VisibleRegion) -> Unit)? = null
     ) {
         val currentLocation = LatLng(latitude, longitude)
         map.addMarker(MarkerOptions().position(currentLocation))
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, zoom))
-        updateVisibleRegion?.invoke(map.projection.visibleRegion)
+        mapListeners.OnUpdateVisibleRegion(map.projection.visibleRegion)
     }
 
-    fun moveToGivenLocation(
-        latitude: Double,
-        longitude: Double,
-        zoom: Float = 16f,
-        updateVisibleRegion: ((VisibleRegion) -> Unit)?
-    ) {
+    fun moveToGivenLocation(latitude: Double, longitude: Double, zoom: Float = 16f) {
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(latitude, longitude), zoom))
-        updateVisibleRegion?.invoke(map.projection.visibleRegion)
+        mapListeners.OnUpdateVisibleRegion(map.projection.visibleRegion)
     }
 
     internal fun isClusterManagerInitialized() = this::clusterManager.isInitialized
 
-    abstract fun setupListeners(onCameraMoveListener: (() -> Unit)? = null)
+    abstract fun setupListeners(googleMap: GoogleMap)
 
     abstract fun <T : MarkerItem> createMarkerCluster(dataset: List<T>, numberOfClusters: Int = 10)
 

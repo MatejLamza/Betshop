@@ -14,6 +14,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.VisibleRegion
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import matej.lamza.betshops.R
 import matej.lamza.betshops.common.base.BaseActivity
@@ -21,6 +22,7 @@ import matej.lamza.betshops.data.domain.models.ClusterBetshop
 import matej.lamza.betshops.databinding.ActivityMapsBinding
 import matej.lamza.betshops.utils.BetshopMapUtils
 import matej.lamza.betshops.utils.LocationUtils
+import matej.lamza.betshops.utils.MapListeners
 import matej.lamza.betshops.utils.MapUtils
 import matej.lamza.betshops.utils.extensions.arePermissionsGranted
 import matej.lamza.betshops.utils.extensions.openNavigation
@@ -30,9 +32,9 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 private const val REQUEST_CODE_PERMISSIONS = 1007
 private const val REQUEST_CODE_LOCATION = 1001
 
-class MapActivity : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::inflate), OnMapReadyCallback {
+class MapActivity : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::inflate), OnMapReadyCallback, MapListeners {
 
-    private val mapUtils by lazy { BetshopMapUtils(this) }
+    private val mapUtils by lazy { BetshopMapUtils(this, this) }
     private val locationUtils by lazy { LocationUtils(this) }
     private val mapViewModel by viewModel<MapViewModel>()
     private val locationCallback: LocationCallback = object : LocationCallback() {
@@ -67,7 +69,7 @@ class MapActivity : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::infla
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
-        mapUtils.setupMap(googleMap) { mapViewModel.updateMapVisibleRegion(googleMap.projection.visibleRegion) }
+        mapUtils.setupMap(googleMap)
         checkPermissions()
     }
     //endregion
@@ -76,7 +78,7 @@ class MapActivity : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::infla
     private fun setupObservers() {
         mapViewModel.lastLocation.distinctUntilChanged().observe(this) {
             locationUtils.stopLocationUpdates(locationCallback)
-            mapUtils.moveToGivenLocation(it.latitude, it.longitude) { mapViewModel.updateMapVisibleRegion(it) }
+            mapUtils.moveToGivenLocation(it.latitude, it.longitude)
         }
         mapViewModel.betshopLocations.distinctUntilChanged().observe(this) {
             if (it.isEmpty()) Toast.makeText(
@@ -124,25 +126,23 @@ class MapActivity : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::infla
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_CODE_LOCATION) {
-            if (locationUtils.isGPSEnabled(this))
-                locationUtils.startLocationUpdates(locationCallback)
-            else
-                mapUtils.setLocationOnTheMapAndZoom(MapUtils.MunichMarker.latitude,
-                    MapUtils.MunichMarker.longitude,
-                    updateVisibleRegion = { mapViewModel.updateMapVisibleRegion(it) })
+            if (locationUtils.isGPSEnabled(this)) locationUtils.startLocationUpdates(locationCallback)
+            else mapUtils.setDefaultLocation()
         }
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_CODE_PERMISSIONS) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) locationUtils.getCurrentLocation(
-                this, locationCallback,
-            ) { it.startResolutionForResult(this, REQUEST_CODE_LOCATION) }
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                locationUtils.getCurrentLocation(this, locationCallback)
+                { it.startResolutionForResult(this, REQUEST_CODE_LOCATION) }
             else
-                mapUtils.setLocationOnTheMapAndZoom(MapUtils.MunichMarker.latitude,
-                    MapUtils.MunichMarker.longitude,
-                    updateVisibleRegion = { mapViewModel.updateMapVisibleRegion(it) })
+                mapUtils.setDefaultLocation()
         }
+    }
+
+    override fun OnUpdateVisibleRegion(visibleRegion: VisibleRegion) {
+        mapViewModel.updateMapVisibleRegion(visibleRegion)
     }
 }

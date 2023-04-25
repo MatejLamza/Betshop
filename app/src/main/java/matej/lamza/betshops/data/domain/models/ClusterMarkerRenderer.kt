@@ -14,7 +14,7 @@ import matej.lamza.betshops.R
 class ClusterMarkerRenderer(
     private val context: Context,
     map: GoogleMap,
-    private val clusterManager: ClusterManager<ClusterBetshop>
+    clusterManager: ClusterManager<ClusterBetshop>
 ) : DefaultClusterRenderer<ClusterBetshop>(context, map, clusterManager) {
 
     var currentlySelectedMarker: ClusterBetshop? = null
