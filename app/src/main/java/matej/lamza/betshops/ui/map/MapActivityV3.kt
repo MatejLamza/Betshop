@@ -8,7 +8,6 @@ import android.view.View
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.distinctUntilChanged
-import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -35,16 +34,15 @@ class MapActivityV3 : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::inf
 
     private val mapUtils by lazy { MapUtilsV2<ClusterBetshop>(this) }
     private val locationUtils by lazy { LocationUtils(this) }
-
     private val mapViewModel by viewModel<MapViewModel>()
-    private lateinit var bottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
-
     private val locationCallback: LocationCallback = object : LocationCallback() {
         override fun onLocationResult(p0: LocationResult) {
             super.onLocationResult(p0)
             mapViewModel.requestLastLocation(locationUtils.fusedLocationClient)
         }
     }
+
+    private lateinit var bottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,7 +56,9 @@ class MapActivityV3 : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::inf
     private fun checkPermissions() {
         if (!arePermissionsGranted(MapUtilsV2.permissions))
             requestPermissions(MapUtilsV2.permissions, REQUEST_CODE_PERMISSIONS)
-        else getCurrentLocation()
+        else locationUtils.getCurrentLocation(this, locationCallback) {
+            it.startResolutionForResult(this, REQUEST_CODE_LOCATION)
+        }
     }
 
     //region Map
@@ -68,12 +68,9 @@ class MapActivityV3 : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::inf
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
-        mapUtils.setupMap(googleMap)
-        mapUtils.map.apply(::setupMapListeners)
-    }
-
-    private fun setupMapListeners(googleMap: GoogleMap) {
-        googleMap.setOnCameraMoveListener { mapViewModel.updateMapVisibleRegion(googleMap.projection.visibleRegion) }
+        mapUtils.setupMap(googleMap) {
+            mapViewModel.updateMapVisibleRegion(googleMap.projection.visibleRegion)
+        }
     }
     //endregion
 
@@ -121,20 +118,6 @@ class MapActivityV3 : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::inf
     }
     //endregion
 
-    /**
-     * This function check weather user enabled GPS if [true] we are requesting location updates.
-     * Otherwise in the [false] scenario this function will prompt user to turn on his GPS services.
-     * @see LocationUtils.startLocationUpdates
-     */
-    private fun getCurrentLocation() {
-        if (locationUtils.isGPSEnabled(this)) locationUtils.startLocationUpdates(locationCallback)
-        else
-            locationUtils.task.addOnFailureListener { exception ->
-                if (exception is ResolvableApiException)
-                    runCatching { exception.startResolutionForResult(this, REQUEST_CODE_LOCATION) }
-            }
-    }
-
     override fun onPause() {
         super.onPause()
         locationUtils.stopLocationUpdates(locationCallback)
@@ -156,7 +139,9 @@ class MapActivityV3 : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::inf
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_CODE_PERMISSIONS) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) getCurrentLocation()
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) locationUtils.getCurrentLocation(
+                this, locationCallback,
+            ) { it.startResolutionForResult(this, REQUEST_CODE_LOCATION) }
             else
                 mapUtils.setLocationOnTheMapAndZoom(MapUtilsV2.MunichMarker.latitude,
                     MapUtilsV2.MunichMarker.longitude,

@@ -37,12 +37,18 @@ class MapUtilsV2<T : ClusterItem>(private val context: Activity) {
         val MunichMarker = LatLng(MUNICH_LAT, MUNICH_LON)
     }
 
-    fun setupMap(googleMap: GoogleMap) {
+    fun setupMap(googleMap: GoogleMap, onCameraMoveListener: (() -> Unit)? = null) {
         map = googleMap
         clusterManager = setupClusterManager(context)
-        setupListeners()
+        setupListeners(onCameraMoveListener)
     }
 
+    /**
+     * Function creates location from given coordinates, adds marker to the map and moves camera to that location.
+     * @param zoom - [Float] value represent level of zoom from 0 - 16.
+     * @param updateVisibleRegion - optional parameter used to update visible region so map can be updated accordingly
+     * when action on screen occurs such as zoom on the new location or requesting current location.
+     */
     fun setLocationOnTheMapAndZoom(
         latitude: Double,
         longitude: Double,
@@ -55,7 +61,7 @@ class MapUtilsV2<T : ClusterItem>(private val context: Activity) {
         updateVisibleRegion?.invoke(map.projection.visibleRegion)
     }
 
-    private fun setupListeners() {
+    private fun setupListeners(onCameraMoveListener: (() -> Unit)? = null) {
         map.setOnCameraIdleListener(clusterManager)
         map.setOnMapClickListener { onBetshopSelected?.invoke(null) }
         clusterManager.setOnClusterItemClickListener { marker ->
@@ -64,6 +70,7 @@ class MapUtilsV2<T : ClusterItem>(private val context: Activity) {
             updateMarkerState(marker)
             return@setOnClusterItemClickListener false
         }
+        map.setOnCameraMoveListener { onCameraMoveListener?.invoke() }
     }
 
     private fun <T : ClusterItem> updateMarkerState(markerClicked: T) {
