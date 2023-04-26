@@ -81,7 +81,7 @@ class MapActivity : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::infla
     private fun setupObservers() {
         mapViewModel.lastLocation.distinctUntilChanged().observe(this) {
             locationUtils.stopLocationUpdates(locationCallback)
-            mapUtils.moveToGivenLocation(it.latitude, it.longitude)
+            mapUtils.setLocationOnTheMapAndZoom(it.latitude, it.longitude)
         }
         mapViewModel.betshopLocations.distinctUntilChanged().observe(this) {
             if (it.isEmpty()) Toast.makeText(

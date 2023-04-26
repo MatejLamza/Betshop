@@ -5,5 +5,5 @@ import matej.lamza.betshops.common.view.ProgressDialog
 import org.koin.dsl.module
 
 val dialogModule = module {
-    factory { (manager: FragmentManager, message: String) -> ProgressDialog(manager, message) }
+    factory { (manager: FragmentManager) -> ProgressDialog(manager) }
 }
