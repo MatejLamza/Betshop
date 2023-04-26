@@ -9,8 +9,11 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.tasks.await
+import matej.lamza.betshops.common.ConnectionState
+import matej.lamza.betshops.common.State
 import matej.lamza.betshops.data.BetshopLocationsRepo
 import matej.lamza.betshops.data.domain.models.ClusterBetshop
+import matej.lamza.betshops.utils.extensions.asLiveDataWithState
 import matej.lamza.betshops.utils.extensions.launch
 import matej.lamza.betshops.utils.extensions.round
 
@@ -18,8 +21,17 @@ private const val UPDATE_MAP = 500L
 
 class MapViewModel(private val betshopLocationsRepo: BetshopLocationsRepo) : ViewModel() {
 
-    private var visibleMapRange = MutableLiveData<VisibleRegion>()
+    private val visibleMapRange = MutableLiveData<VisibleRegion>()
+    val isNetworkAvailable = MutableLiveData<ConnectionState>()
 
+    private val _stateBetshop = MutableLiveData<State>()
+    val stateBetshop: LiveData<State> = _stateBetshop
+
+    /**
+     * [visibleMapRange] live data that holds currently visible map region on the users screen.
+     * debounce set to [UPDATE_MAP] interval so we don't trigger multiple calls evey time user
+     * scrolls on the map.
+     */
     @OptIn(FlowPreview::class)
     private val updatedCoordinates =
         visibleMapRange
@@ -34,18 +46,28 @@ class MapViewModel(private val betshopLocationsRepo: BetshopLocationsRepo) : Vie
                     it?.nearLeft?.longitude?.round()
                 )
             }
+            .map { it.filterNotNull() }
 
+    /**
+     * Observers [updatedCoordinates] so new api call is made to fetch betshop location for given coordinates.
+     *  @return [LiveData] List of betshops visible on the users screen.
+     */
     @OptIn(ExperimentalCoroutinesApi::class)
     val betshopLocations = updatedCoordinates
         .distinctUntilChanged()
-        .map { it.filterNotNull() }
         .map { newCords -> betshopLocationsRepo.fetchBetshopLocation(newCords) }
         .flattenConcat()
-        .asLiveData()
+        .asLiveDataWithState(_stateBetshop)
 
+    /**
+     * Represents user last or current location if he gave permissions.
+     */
     private val _lastLocation = MutableLiveData<Location>()
     val lastLocation: LiveData<Location> = _lastLocation
 
+    /**
+     * Holds data about last selected betshop so Bottom Sheet can be updated with information accordingly.
+     */
     private val _currentlySelectedBetshop = MutableLiveData<ClusterBetshop?>(null)
     val currentlySelectedBetshop: LiveData<ClusterBetshop?> = _currentlySelectedBetshop
 

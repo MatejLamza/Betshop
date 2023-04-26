@@ -1,14 +1,17 @@
 package matej.lamza.betshops.utils.extensions
 
 import android.util.Log
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import matej.lamza.betshops.common.State
+import matej.lamza.betshops.common.base.View
 import kotlin.coroutines.CoroutineContext
 
 fun exceptionHandler(onError: ((Throwable) -> Unit)) =
@@ -63,3 +66,42 @@ fun ViewModel.launchWithState(
         onDone?.invoke()
     }
 }
+
+fun LiveData<State>.observeState(
+    owner: LifecycleOwner,
+    view: View? = null,
+    onError: ((error: Throwable?) -> Unit)? = null,
+    onLoading: (() -> Unit)? = null,
+    onDone: ((hasData: Boolean?) -> Unit)? = null
+) {
+    observe(owner) {
+        when (it) {
+            is State.Loading -> onLoading?.invoke() ?: view?.showLoading()
+            is State.Done -> onDone?.invoke(it.hasData)
+            is State.Error -> {
+                onError?.invoke(it.throwable)
+                    ?: it.throwable?.let { error -> view?.showError(error) }
+            }
+        }
+    }
+}
+
+fun <T> Flow<T>.asLiveDataWithState(
+    data: MutableLiveData<State>? = null,
+    onLoading: (() -> Unit)? =
+        if (data != null) ({ data.value = State.Loading })
+        else null,
+    onError: ((Throwable) -> Unit)? =
+        if (data != null) ({ data.value = State.Error(it) })
+        else null,
+    onDone: (() -> Unit)? =
+        if (data != null) ({ data.value = State.Done() })
+        else null,
+    context: CoroutineContext =
+        if (onError != null) exceptionHandler(onError = onError)
+        else exceptionHandler(data)
+): LiveData<T> = onStart { onLoading?.invoke() }
+    .catch { onError?.invoke(it) }
+    .onEach { onDone?.invoke() }
+    .asLiveData(context)
+

@@ -5,10 +5,14 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.util.DisplayMetrics
 import android.util.Log
+import android.view.View
 import android.view.WindowManager
 import android.view.WindowMetrics
+import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.google.android.material.snackbar.BaseTransientBottomBar
+import com.google.android.material.snackbar.Snackbar
 import com.permissionx.guolindev.PermissionX
 import matej.lamza.betshops.utils.ScreenDimensions
 
@@ -27,11 +31,7 @@ fun AppCompatActivity.requestPermission(permissions: List<String>, onGranted: ((
         .permissions(permissions)
         .request { allGranted, grantedList, deniedList ->
             Log.d("UtilsMap", "all Granted: $allGranted |\n GrantedList: $grantedList |\n Denied List: $deniedList  ")
-//            if (grantedList.isNotEmpty()) onGranted.invoke()
-//            else onDenied.invoke()
         }
-
-
 }
 
 fun Activity.getScreenMeasurements(): ScreenDimensions {
@@ -44,3 +44,24 @@ fun Activity.getScreenMeasurements(): ScreenDimensions {
         ScreenDimensions(displayMetrics.widthPixels, displayMetrics.heightPixels)
     }
 }
+
+fun Activity.infoSnackBar(
+    view: View, message: String,
+    @BaseTransientBottomBar.Duration duration: Int = Snackbar.LENGTH_SHORT
+) = Snackbar.make(this, view, message, duration).info()
+
+fun Activity.errorSnackBar(
+    view: View, message: String,
+    @BaseTransientBottomBar.Duration duration: Int = Snackbar.LENGTH_SHORT
+) = Snackbar.make(this, view, message, duration).error()
+
+fun Activity.infoSnackBar(
+    view: View, @StringRes messageRes: Int,
+    @BaseTransientBottomBar.Duration duration: Int = Snackbar.LENGTH_SHORT
+) = this.infoSnackBar(view, getString(messageRes), duration)
+
+fun Activity.errorSnackBar(
+    view: View, @StringRes messageRes: Int,
+    @BaseTransientBottomBar.Duration duration: Int = Snackbar.LENGTH_SHORT
+) = this.errorSnackBar(view, getString(messageRes), duration)
+

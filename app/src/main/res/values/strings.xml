@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">Betshops</string>
     <string name="title_activity_maps">MapsActivity</string>
+    <string name="connection_lost">Network connection lost</string>
+    <string name="connection_restored">Connection restored</string>
 </resources>

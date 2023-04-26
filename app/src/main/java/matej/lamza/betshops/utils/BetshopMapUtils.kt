@@ -26,6 +26,7 @@ class BetshopMapUtils(private val activity: Activity, private val mapListener: M
         mapListeners = mapListener
     }
 
+    //Not neccessary cluster marker renderer is doing that job
     override fun <T : ClusterItem> updateMarkerState(markerClicked: T) {
         if (isClusterManagerInitialized()) {
             val markerBitmap = BitmapFactory.decodeResource(activity.resources, (R.drawable.pin_active))
@@ -46,14 +47,15 @@ class BetshopMapUtils(private val activity: Activity, private val mapListener: M
     override fun setupListeners(googleMap: GoogleMap) {
         map.setOnCameraIdleListener(clusterManager)
         map.setOnMapClickListener { onBetshopSelected?.invoke(null) }
+        map.setOnCameraMoveListener { mapListener.OnUpdateVisibleRegion(map.projection.visibleRegion) }
+
         clusterManager.setOnClusterItemClickListener { marker ->
             (clusterManager.renderer as ClusterMarkerRenderer).currentlySelectedMarker = marker
             onBetshopSelected?.invoke(marker)
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(marker.position, 16f))
-            updateMarkerState(marker)
+
             return@setOnClusterItemClickListener false
         }
-        map.setOnCameraMoveListener { mapListener.OnUpdateVisibleRegion(map.projection.visibleRegion) }
     }
 
     override fun <I : MarkerItem> createMarkerCluster(dataset: List<I>, numberOfClusters: Int) {
@@ -72,5 +74,4 @@ class BetshopMapUtils(private val activity: Activity, private val mapListener: M
         setLocationOnTheMapAndZoom(MUNICH_LAT, MUNICH_LON)
         mapListener.OnUpdateVisibleRegion(map.projection.visibleRegion)
     }
-
 }

@@ -9,4 +9,8 @@
     <color name="white">#FFFFFFFF</color>
     <color name="grey">#808080</color>
 
+    <color name="highlight_purple">#8027CF</color>
+    <color name="highlight_red">#FF453A</color>
+
+
 </resources>

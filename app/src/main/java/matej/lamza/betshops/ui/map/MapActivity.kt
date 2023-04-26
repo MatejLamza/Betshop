@@ -17,6 +17,8 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.VisibleRegion
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import matej.lamza.betshops.R
+import matej.lamza.betshops.common.Available
+import matej.lamza.betshops.common.Unavailable
 import matej.lamza.betshops.common.base.BaseActivity
 import matej.lamza.betshops.data.domain.models.ClusterBetshop
 import matej.lamza.betshops.databinding.ActivityMapsBinding
@@ -25,6 +27,7 @@ import matej.lamza.betshops.utils.LocationUtils
 import matej.lamza.betshops.utils.MapListeners
 import matej.lamza.betshops.utils.MapUtils
 import matej.lamza.betshops.utils.extensions.arePermissionsGranted
+import matej.lamza.betshops.utils.extensions.observeState
 import matej.lamza.betshops.utils.extensions.openNavigation
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -93,6 +96,9 @@ class MapActivity : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::infla
             if (betshop != null) setLocationDetails(betshop)
             setBottomSheetVisibility(betshop != null)
         }
+        mapViewModel.stateBetshop.observeState(this, this) {
+
+        }
         mapUtils.onBetshopSelected = {
             mapViewModel.updateCurrentlySelectedBetshop(it)
         }
@@ -100,6 +106,16 @@ class MapActivity : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::infla
             val currentPosition = mapViewModel.currentlySelectedBetshop.value?.position
             if (currentPosition != null) openNavigation(currentPosition)
         }
+    }
+
+    override fun onNetworkAvailable() {
+        super.onNetworkAvailable()
+        mapViewModel.isNetworkAvailable.value = Available
+    }
+
+    override fun onNetworkLost() {
+        super.onNetworkLost()
+        mapViewModel.isNetworkAvailable.value = Unavailable
     }
 
     private fun setBottomSheetVisibility(isVisible: Boolean) {
