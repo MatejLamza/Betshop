@@ -6,7 +6,6 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.asLiveData
 import androidx.viewbinding.ViewBinding
@@ -16,9 +15,13 @@ import matej.lamza.betshops.R
 import matej.lamza.betshops.common.Available
 import matej.lamza.betshops.common.ConnectionState
 import matej.lamza.betshops.common.Unavailable
+import matej.lamza.betshops.common.view.ProgressDialog
 import matej.lamza.betshops.utils.ActivityViewBindingInflate
 import matej.lamza.betshops.utils.extensions.errorSnackBar
 import matej.lamza.betshops.utils.extensions.infoSnackBar
+import org.koin.android.ext.android.inject
+import org.koin.core.parameter.parametersOf
+import java.net.UnknownHostException
 
 abstract class BaseActivity<VB : ViewBinding>(private val inflate: ActivityViewBindingInflate<VB>? = null) :
     AppCompatActivity(), View {
@@ -26,6 +29,8 @@ abstract class BaseActivity<VB : ViewBinding>(private val inflate: ActivityViewB
     private var _binding: VB? = null
     val binding: VB
         get() = _binding!!
+
+    protected val progressDialog: ProgressDialog by inject { parametersOf(supportFragmentManager, "Loading") }
 
     private val connectivityManager by lazy {
         kotlin.runCatching {
@@ -85,14 +90,16 @@ abstract class BaseActivity<VB : ViewBinding>(private val inflate: ActivityViewB
     }
 
     override fun dismissLoading() {
-        Log.d("bbb", "dismissLoading: ")
+        progressDialog.dismiss()
     }
 
     override fun showLoading() {
-        Log.d("bbb", "showLoading: ")
+        progressDialog.show()
     }
 
+    //Not the way to handle errors!
     override fun showError(error: Throwable) {
-        Log.d("bbb", "showError: ")
+        if (error !is UnknownHostException)
+            errorSnackBar(binding.root, "Something went wrong! ${error.message}").show()
     }
 }

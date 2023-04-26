@@ -77,7 +77,10 @@ fun LiveData<State>.observeState(
     observe(owner) {
         when (it) {
             is State.Loading -> onLoading?.invoke() ?: view?.showLoading()
-            is State.Done -> onDone?.invoke(it.hasData)
+            is State.Done -> {
+                view?.dismissLoading()
+                onDone?.invoke(it.hasData)
+            }
             is State.Error -> {
                 onError?.invoke(it.throwable)
                     ?: it.throwable?.let { error -> view?.showError(error) }
@@ -100,8 +103,13 @@ fun <T> Flow<T>.asLiveDataWithState(
     context: CoroutineContext =
         if (onError != null) exceptionHandler(onError = onError)
         else exceptionHandler(data)
-): LiveData<T> = onStart { onLoading?.invoke() }
+): LiveData<T> = onStart {
+    Log.d("bbb", "asLiveDataWithState: tu sam loading")
+    onLoading?.invoke()
+}
     .catch { onError?.invoke(it) }
-    .onEach { onDone?.invoke() }
+    .onEach {
+        Log.d("bbb", "asLiveDataWithState: gotovo")
+        onDone?.invoke()
+    }
     .asLiveData(context)
-

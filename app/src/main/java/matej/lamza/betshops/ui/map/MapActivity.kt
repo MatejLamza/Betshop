@@ -96,9 +96,7 @@ class MapActivity : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::infla
             if (betshop != null) setLocationDetails(betshop)
             setBottomSheetVisibility(betshop != null)
         }
-        mapViewModel.stateBetshop.observeState(this, this) {
-
-        }
+        mapViewModel.stateBetshop.observeState(this, this) {}
         mapUtils.onBetshopSelected = {
             mapViewModel.updateCurrentlySelectedBetshop(it)
         }
