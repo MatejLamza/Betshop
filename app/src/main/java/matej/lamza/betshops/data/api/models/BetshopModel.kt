@@ -20,6 +20,6 @@ data class BetshopModel(
     @SerializedName("location") val location: LocationModel
 ) {
     fun toDomain(): Betshop {
-        return Betshop(name, county, city, address, location)
+        return Betshop(name, county, city, address, location.toDomain())
     }
 }

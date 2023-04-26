@@ -3,9 +3,11 @@ package matej.lamza.betshops.ui.map
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.distinctUntilChanged
 import com.google.android.gms.location.LocationCallback
@@ -22,10 +24,7 @@ import matej.lamza.betshops.common.Unavailable
 import matej.lamza.betshops.common.base.BaseActivity
 import matej.lamza.betshops.data.domain.models.ClusterBetshop
 import matej.lamza.betshops.databinding.ActivityMapsBinding
-import matej.lamza.betshops.utils.BetshopMapUtils
-import matej.lamza.betshops.utils.LocationUtils
-import matej.lamza.betshops.utils.MapListeners
-import matej.lamza.betshops.utils.MapUtils
+import matej.lamza.betshops.utils.*
 import matej.lamza.betshops.utils.extensions.arePermissionsGranted
 import matej.lamza.betshops.utils.extensions.observeState
 import matej.lamza.betshops.utils.extensions.openNavigation
@@ -49,6 +48,7 @@ class MapActivity : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::infla
 
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet.bottomSheet)
@@ -126,7 +126,9 @@ class MapActivity : BaseActivity<ActivityMapsBinding>(ActivityMapsBinding::infla
         with(binding.bottomSheet) {
             location.text = betshop.title
             phone.text = betshop.snippet
-            schedule.text = "Open now!"
+            schedule.text =
+                if (DateUtils.isCurrentlyOpened()) getString(R.string.betshop_open_now, DateUtils.END_TIME.toString())
+                else getString(R.string.betshop_closed, DateUtils.START_TIME.toString())
         }
     }
     //endregion
