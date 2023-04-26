@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1040435346163",
+    "project_id": "betshop-c9484",
+    "storage_bucket": "betshop-c9484.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1040435346163:android:941d3fe805f3699eb5d586",
+        "android_client_info": {
+          "package_name": "matej.lamza.betshops"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1040435346163-ot5n2ghc9eiihcej9gmq72s0hf8li2cm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "matej.lamza.betshops",
+            "certificate_hash": "153b12bff5027eab53ca1d1e470932464f6005fd"
+          }
+        },
+        {
+          "client_id": "1040435346163-a7q1hbuuts2t1g27oes96a63j3gk9eik.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBEpw5rl6IA-VtZx-eEds1h80qT9N5-ed8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1040435346163-a7q1hbuuts2t1g27oes96a63j3gk9eik.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
