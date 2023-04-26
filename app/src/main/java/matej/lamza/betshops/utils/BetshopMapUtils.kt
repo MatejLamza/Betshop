@@ -71,7 +71,9 @@ class BetshopMapUtils(private val activity: Activity, private val mapListener: M
     }
 
     fun setDefaultLocation() {
-        setLocationOnTheMapAndZoom(MUNICH_LAT, MUNICH_LON)
+        if (isMapInitialized())
+            setLocationOnTheMapAndZoom(MUNICH_LAT, MUNICH_LON)
         mapListener.OnUpdateVisibleRegion(map.projection.visibleRegion)
     }
+
 }

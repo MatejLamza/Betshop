@@ -55,6 +55,7 @@ abstract class MapUtils<T : ClusterItem> {
     }
 
     internal fun isClusterManagerInitialized() = this::clusterManager.isInitialized
+    internal fun isMapInitialized() = this::map.isInitialized
 
     abstract fun setupListeners(googleMap: GoogleMap)
 
